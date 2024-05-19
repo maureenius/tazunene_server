@@ -4,3 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.40"
+tokio = { version = "1.10.0", features = ["full"] }
+dotenv = "0.15.0"
+itertools = "0.13.0"
+axum = "0.7.5"
+serde = { version = "1.0.130", features = ["derive"] }
