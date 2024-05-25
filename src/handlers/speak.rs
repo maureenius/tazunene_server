@@ -1,6 +1,6 @@
-use std::{io::Write, sync::Arc};
+use std::sync::Arc;
 
-use axum::{extract::State, Json};
+use axum::{body::Body, extract::State, response::{IntoResponse, Response}, Json};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -14,11 +14,13 @@ pub struct SpeakRequest {
 pub async fn speak(
     client: State<Arc<VoicevoxClient>>,
     Json(request): Json<SpeakRequest>,
-) -> StatusCode {
+) -> anyhow::Result<impl IntoResponse, StatusCode> {
     let sound = client.speak(request.message.as_str()).unwrap();
 
-    let mut file = std::fs::File::create("audio.wav").unwrap();
-    file.write_all(sound.as_slice()).unwrap();
+    let response = Response::builder()
+        .header("Content-Type", "audio/wav")
+        .body(Body::from(sound.as_slice().to_vec()))
+        .expect("failed to build response");
 
-    StatusCode::OK
+    Ok(response)
 }
