@@ -4,10 +4,11 @@ mod infrastructures;
 use std::{env, sync::Arc};
 use axum::{routing::{get, post}, Router};
 use handlers::echo::{self};
-use infrastructures::open_ai_client::{ApiKey, OpenAiClient};
+use infrastructures::{open_ai_client::{ApiKey, OpenAiClient}, voicevox_client};
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::handlers::health_check;
+use crate::handlers::speak;
 
 #[tokio::main]
 async fn main() {
@@ -24,10 +25,16 @@ async fn main() {
 
 fn create_router() -> Router {
     let open_ai_client = create_open_ai_client(env::var("OPEN_AI_API_KEY").expect("undefined [OPEN_AI_API_KEY]"));
+    let voicevox_client = Arc::new(voicevox_client::VoicevoxClient::new(env::var("OPEN_JTALK_PATH").expect("undefined [JTALK_PATH]").as_str()));
 
     let root = Router::new()
     .route("/", get(health_check::health_check))
     .route("/echo", post(echo::echo));
+
+    let speak = Router::new()
+    .route("/speak", post(speak::speak))
+    .with_state(voicevox_client);
+
     let messages = Router::new()
     .route("/chat_simple", post(handlers::chat_simple::chat_simple))
     .with_state(open_ai_client);
@@ -35,6 +42,7 @@ fn create_router() -> Router {
     Router::new()
     .merge(root)
     .merge(messages)
+    .merge(speak)
     .layer(CorsLayer::new()
         .allow_methods(Any)
         .allow_origin(Any)
