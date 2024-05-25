@@ -1,9 +1,8 @@
-use std::{env, io::Write, sync::Arc};
+use std::{io::Write, sync::Arc};
 
 use axum::{extract::State, Json};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use vvcore::{AccelerationMode, VoicevoxCore};
 
 use crate::infrastructures::voicevox_client::VoicevoxClient;
 
@@ -22,9 +21,4 @@ pub async fn speak(
     file.write_all(sound.as_slice()).unwrap();
 
     StatusCode::OK
-}
-
-fn create_vv(path: &str) -> VoicevoxCore {
-    let dir = std::ffi::CString::new(path).unwrap();
-    VoicevoxCore::new_from_options(AccelerationMode::Auto, 0, true, dir.as_c_str()).unwrap()
 }
