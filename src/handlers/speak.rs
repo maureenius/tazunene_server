@@ -4,18 +4,19 @@ use axum::{body::Body, extract::State, response::{IntoResponse, Response}, Json}
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::infrastructures::voicevox_client::VoicevoxClient;
+use crate::domains::infra_trait::VoiceSynthesizer;
+use crate::usecases::speak_service::SpeakService;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpeakRequest {
     message: String,
 }
 
-pub async fn speak(
-    client: State<Arc<VoicevoxClient>>,
+pub async fn speak<T: VoiceSynthesizer>(
+    State(service): State<Arc<SpeakService<T>>>,
     Json(request): Json<SpeakRequest>,
 ) -> anyhow::Result<impl IntoResponse, StatusCode> {
-    let sound = client.speak(request.message.as_str()).unwrap();
+    let sound = service.synthesize_speech(request.message.as_str()).unwrap();
 
     let response = Response::builder()
         .header("Content-Type", "audio/wav")

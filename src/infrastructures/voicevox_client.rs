@@ -1,4 +1,6 @@
-use vvcore::{AccelerationMode, CPointerWrap, ResultCode, VoicevoxCore};
+use vvcore::{AccelerationMode, VoicevoxCore};
+
+use crate::domains::infra_trait::VoiceSynthesizer;
 
 pub struct VoicevoxClient {
     core: VoicevoxCore,
@@ -8,9 +10,15 @@ impl VoicevoxClient {
     pub fn new(jtalk_path: &str) -> Self {
         Self { core: create_vv(jtalk_path), actor_id: 14 }
     }
-
-    pub fn speak(&self, text: &str) -> Result<CPointerWrap<u8>, ResultCode> {
-        self.core.tts_simple(text, self.actor_id)
+}
+impl VoiceSynthesizer for VoicevoxClient {
+    fn synthesize(&self, text: &str) -> anyhow::Result<Vec<u8>> {
+        Ok(
+            self.core.tts_simple(text, self.actor_id)
+            .map_err(|e| anyhow::anyhow!("Voice synthesis failed: {:?}", e))?
+            .as_slice()
+            .to_vec()
+        )
     }
 }
 

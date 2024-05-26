@@ -1,5 +1,7 @@
 mod handlers;
 mod infrastructures;
+mod domains;
+mod usecases;
 
 use std::{env, sync::Arc};
 use axum::{routing::{get, post}, Router};
@@ -25,7 +27,8 @@ async fn main() {
 
 fn create_router() -> Router {
     let open_ai_client = create_open_ai_client(env::var("OPEN_AI_API_KEY").expect("undefined [OPEN_AI_API_KEY]"));
-    let voicevox_client = Arc::new(voicevox_client::VoicevoxClient::new(env::var("OPEN_JTALK_PATH").expect("undefined [JTALK_PATH]").as_str()));
+    let voicevox_client = voicevox_client::VoicevoxClient::new(env::var("OPEN_JTALK_PATH").expect("undefined [JTALK_PATH]").as_str());
+    let speak_service = usecases::speak_service::SpeakService::new(voicevox_client);
 
     let root = Router::new()
     .route("/", get(health_check::health_check))
@@ -33,7 +36,7 @@ fn create_router() -> Router {
 
     let speak = Router::new()
     .route("/speak", post(speak::speak))
-    .with_state(voicevox_client);
+    .with_state(Arc::new(speak_service));
 
     let messages = Router::new()
     .route("/chat_simple", post(handlers::chat_simple::chat_simple))
