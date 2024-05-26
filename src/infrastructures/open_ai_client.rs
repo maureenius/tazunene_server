@@ -2,6 +2,8 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+use crate::domains::infra_trait::TextGenerator;
+
 #[derive(Debug, Clone)]
 pub struct ApiKey(String);
 impl ApiKey {
@@ -114,6 +116,12 @@ impl OpenAiClient {
             let error_text = response.text().await.unwrap_or_default();
             Err(anyhow::anyhow!("Request failed with status {}: {}", status, error_text))
         }
+    }
+}
+impl TextGenerator for OpenAiClient {
+    async fn generate(&self, request: String) -> anyhow::Result<String> {
+        let response = self.chat(&ChatRequest::new(&request)).await?;
+        Ok(response.message)
     }
 }
 
