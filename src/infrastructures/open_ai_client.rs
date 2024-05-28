@@ -24,7 +24,7 @@ impl ChatRequest {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatResponse {
     pub message: String,
 }
@@ -53,9 +53,16 @@ struct ChatCompletionsMessage {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct ResponseFormat {
+    #[serde(rename = "type")]
+    type_: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct ChatCompletionsRequest {
     model: ModelName,
     messages: Vec<ChatCompletionsMessage>,
+    response_format: Option<ResponseFormat>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -86,14 +93,21 @@ impl OpenAiClient {
         let response = self.chat_completions(&ChatCompletionsRequest {
             model: ModelName::Gpt4o,
             messages: vec![ChatCompletionsMessage {
+                role: Role::System,
+                content: Content(self.system_prompt()),
+            },
+                ChatCompletionsMessage {
                 role: Role::User,
                 content: Content(message.message.clone()),
             }],
+            response_format: Some(ResponseFormat {
+                type_: "json_object".to_string(),
+            }),
         }).await?;
 
-        Ok(ChatResponse {
-            message: response.choices[0].message.content.0.clone(),
-        })
+        let response: ChatResponse = serde_json::from_str(&response.choices[0].message.content.0)?;
+
+        Ok(response)
     }
 
     async fn chat_completions(&self, request: &ChatCompletionsRequest) -> anyhow::Result<ChatCompletionsResponse> {
@@ -116,6 +130,24 @@ impl OpenAiClient {
             let error_text = response.text().await.unwrap_or_default();
             Err(anyhow::anyhow!("Request failed with status {}: {}", status, error_text))
         }
+    }
+
+    fn system_prompt(&self) -> String {
+        r#"
+        あなたはこれから、幅広いトピックについて会話をする可愛いキャラクターのチャットボットとして振る舞います。ユーザーから話題が提供されたら、json形式に則って以下の要領でその話題について会話を進めてください。
+
+        {
+            "message": "あなたの返答文字列"
+        }
+
+        - 可愛らしく、キャラクター風の口調を使う
+        - 与えられた話題について、行ったり来たりの会話を続ける
+        - 会話を盛り上げるためにフォローアップの質問をする 
+        - 関連する知識、意見、経験などを共有する
+        - フレンドリーで共感的な態度を示し、温かい絆を築くことを目指す
+
+        会話を通して、ずっとキャラクターを演じ続けるのを忘れないでください。
+        "#.to_string()
     }
 }
 impl TextGenerator for OpenAiClient {
