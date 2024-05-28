@@ -11,44 +11,10 @@
             "program": "${workspaceRoot}/target/debug/${workspaceRootFolderName}",
             "args": [],
             "cwd": "${workspaceRoot}/target/debug/",
-            "sourceLanguages": ["rust"]
+            "sourceLanguages": ["rust"],
+            "env": {
+                "LD_LIBRARY_PATH": "/usr/local/lib"
+            }
         },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'tazunene_server'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=tazunene_server",
-                    "--package=tazunene_server"
-                ],
-                "filter": {
-                    "name": "tazunene_server",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'tazunene_server'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=tazunene_server",
-                    "--package=tazunene_server"
-                ],
-                "filter": {
-                    "name": "tazunene_server",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        }
     ]
 }

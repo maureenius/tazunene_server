@@ -39,7 +39,7 @@ fn create_router() -> Router {
     .with_state(Arc::new(speak_service));
 
     let messages = Router::new()
-    .route("/chat_simple", post(handlers::chat_simple::chat_simple))
+    .route("/chat", post(handlers::chat_simple::chat_simple))
     .with_state(open_ai_client);
 
     Router::new()
