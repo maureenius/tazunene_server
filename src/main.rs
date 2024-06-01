@@ -4,10 +4,10 @@ mod domains;
 mod usecases;
 
 use std::{env, sync::Arc};
-use axum::{routing::{get, post}, Router};
+use axum::{routing::{get, post}, Extension, Router};
 use handlers::echo::{self};
-use infrastructures::{open_ai_client::{ApiKey, OpenAiClient}, voicevox_client};
-use sqlx::postgres::PgPoolOptions;
+use infrastructures::{open_ai_client::{ApiKey, OpenAiClient}, repository::CharacterRepositoryPg, voicevox_client};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::handlers::health_check;
@@ -19,7 +19,7 @@ async fn main() {
     tracing_subscriber::fmt().init();
     let _db_pool = connect_db().await.expect("failed to connect to database");
 
-    let app = create_router();
+    let app = create_router(_db_pool);
     let listener_addr = env::var("LISTENER_ADDR").expect("undefined [LISTENER_ADDR]");
     let listener = tokio::net::TcpListener::bind(&listener_addr).await.expect("failed to bind to address");
 
@@ -27,9 +27,10 @@ async fn main() {
     axum::serve(listener, app).await.expect("failed to build server");
 }
 
-fn create_router() -> Router {
+fn create_router(pool: PgPool) -> Router {
     let open_ai_client = create_open_ai_client(env::var("OPEN_AI_API_KEY").expect("undefined [OPEN_AI_API_KEY]"));
     let voicevox_client = voicevox_client::VoicevoxClient::new(env::var("OPEN_JTALK_PATH").expect("undefined [JTALK_PATH]").as_str());
+    let character_repository = Arc::new(infrastructures::repository::CharacterRepositoryPg::new(pool));
     let speak_service = usecases::speak_service::SpeakService::new(voicevox_client);
 
     let root = Router::new()
@@ -41,8 +42,9 @@ fn create_router() -> Router {
     .with_state(Arc::new(speak_service));
 
     let messages = Router::new()
-    .route("/chat", post(handlers::chat_simple::chat_simple))
-    .with_state(open_ai_client);
+    .route("/chat", post(handlers::chat_simple::chat_simple::<OpenAiClient, CharacterRepositoryPg>))
+    .layer(Extension(open_ai_client))
+    .layer(Extension(character_repository));
 
     Router::new()
     .merge(root)

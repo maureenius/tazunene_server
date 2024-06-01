@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use axum::{extract::State, Extension, Json};
+use axum::{Extension, Json};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
-use crate::{domains::character, infrastructures::{open_ai_client::{ChatRequest, OpenAiClient}, repository::CharacterRepository}};
+use crate::{domains::infra_trait::{CharacterRepository, TextGenerator}, usecases};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatSimpleRequest {
@@ -17,15 +17,18 @@ pub struct ChatSimpleResponse {
     message: String,
 }
 
-pub async fn chat_simple(
-    client: State<Arc<OpenAiClient>>,
+pub async fn chat_simple<TG: TextGenerator, CR: CharacterRepository>(
+    generator: Extension<Arc<TG>>,
+    repository: Extension<Arc<CR>>,
     Json(request): Json<ChatSimpleRequest>,
 ) -> anyhow::Result<Json<ChatSimpleResponse>, StatusCode> {
-    match client.chat(&ChatRequest::new(request.message.clone().as_str()))
+    let chat_service = usecases::chat_service::ChatService::new(generator.0.clone(), repository.0.clone());
+
+    match chat_service.generate_text(request.message)
     .await {
         Ok(chat_response) => {
             let response = ChatSimpleResponse {
-                message: chat_response.message,
+                message: chat_response,
             };
             Ok(Json(response))
         },

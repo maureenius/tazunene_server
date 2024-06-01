@@ -14,12 +14,14 @@ impl ApiKey {
 
 #[derive(Debug, Clone)]
 pub struct ChatRequest {
-    message: String,
+    personality_message: String,
+    content_message: String,
 }
 impl ChatRequest {
-    pub fn new(message: &str) -> Self {
+    pub fn new(personality_message: &str, content_message: &str) -> Self {
         Self {
-            message: message.to_string(),
+            personality_message: personality_message.to_string(),
+            content_message: content_message.to_string(),
         }
     }
 }
@@ -98,11 +100,11 @@ impl OpenAiClient {
             model: ModelName::Gpt4o,
             messages: vec![ChatCompletionsMessage {
                 role: Role::System,
-                content: Content(self.system_prompt()),
+                content: Content(message.personality_message.clone()),
             },
                 ChatCompletionsMessage {
                 role: Role::User,
-                content: Content(message.message.clone()),
+                content: Content(message.content_message.clone()),
             }],
             response_format: Some(ResponseFormat {
                 type_: "json_object".to_string(),
@@ -156,7 +158,8 @@ impl OpenAiClient {
 }
 impl TextGenerator for OpenAiClient {
     async fn generate(&self, target: Character, request: String) -> anyhow::Result<String> {
-        let response = self.chat(&ChatRequest::new(&request)).await?;
+        let personality_message: String = target.personality.into();
+        let response = self.chat(&ChatRequest::new(personality_message.as_str(), &request)).await?;
         Ok(response.message)
     }
 }
@@ -188,7 +191,8 @@ mod tests {
         let api_key = ApiKey("test_api_key".to_string());
         let client = OpenAiClient::new_with_base_url(&api_key, &Url::parse(&server.url()).unwrap());
         let request = ChatRequest {
-            message: "Hello, world!".to_string(),
+            personality_message: "I am tester".to_string(),
+            content_message: "Hello, world!".to_string(),
         };
 
         let response = client.chat(&request).await.expect("Failed to get response");
