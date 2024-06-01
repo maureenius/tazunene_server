@@ -2,7 +2,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::domains::infra_trait::TextGenerator;
+use crate::domains::{character::Character, infra_trait::TextGenerator};
 
 #[derive(Debug, Clone)]
 pub struct ApiKey(String);
@@ -155,7 +155,7 @@ impl OpenAiClient {
     }
 }
 impl TextGenerator for OpenAiClient {
-    async fn generate(&self, request: String) -> anyhow::Result<String> {
+    async fn generate(&self, target: Character, request: String) -> anyhow::Result<String> {
         let response = self.chat(&ChatRequest::new(&request)).await?;
         Ok(response.message)
     }
