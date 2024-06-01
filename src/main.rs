@@ -7,6 +7,7 @@ use std::{env, sync::Arc};
 use axum::{routing::{get, post}, Router};
 use handlers::echo::{self};
 use infrastructures::{open_ai_client::{ApiKey, OpenAiClient}, voicevox_client};
+use sqlx::postgres::PgPoolOptions;
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::handlers::health_check;
@@ -16,6 +17,7 @@ use crate::handlers::speak;
 async fn main() {
     dotenv::dotenv().ok();
     tracing_subscriber::fmt().init();
+    let _db_pool = connect_db().await.expect("failed to connect to database");
 
     let app = create_router();
     let listener_addr = env::var("LISTENER_ADDR").expect("undefined [LISTENER_ADDR]");
@@ -55,4 +57,13 @@ fn create_router() -> Router {
 
 fn create_open_ai_client(api_key: String) -> Arc<infrastructures::open_ai_client::OpenAiClient> {
     Arc::new(OpenAiClient::new(&ApiKey::new(api_key.as_str())))
+}
+
+async fn connect_db() -> sqlx::Result<sqlx::Pool<sqlx::Postgres>> {
+    let db_url = env::var("DATABASE_URL").expect("undefined [DATABASE_URL]");
+    
+    PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url)
+        .await
 }

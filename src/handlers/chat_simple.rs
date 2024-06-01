@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use axum::{extract::State, Json};
+use axum::{extract::State, Extension, Json};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
-use crate::infrastructures::open_ai_client::{ChatRequest, OpenAiClient};
+use crate::{domains::character, infrastructures::{open_ai_client::{ChatRequest, OpenAiClient}, repository::CharacterRepository}};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatSimpleRequest {

@@ -82,10 +82,14 @@ pub struct OpenAiClient {
 }
 impl OpenAiClient {
     pub fn new(api_key: &ApiKey) -> Self {
-        Self { 
+        Self::new_with_base_url(api_key, &url::Url::parse("https://api.openai.com").unwrap())
+    }
+
+    pub fn new_with_base_url(api_key: &ApiKey, base_url: &Url) -> Self {
+        Self {
             api_key: api_key.clone(),
             client: Client::new(),
-            base_url: url::Url::parse("https://api.openai.com").unwrap(),
+            base_url: base_url.clone(),
         }
     }
 
@@ -140,7 +144,7 @@ impl OpenAiClient {
             "message": "あなたの返答文字列"
         }
 
-        - 可愛らしく、キャラクター風の口調を使う
+        - クールなキャラクター風の口調を使う
         - 与えられた話題について、行ったり来たりの会話を続ける
         - 会話を盛り上げるためにフォローアップの質問をする 
         - 関連する知識、意見、経験などを共有する
@@ -174,7 +178,7 @@ mod tests {
                     {
                         "message": {
                             "role": "assistant",
-                            "content": "Hello, from the other side!"
+                            "content": "{\n  \"message\": \"Hello, from the other side!\"\n}"
                         }
                     }
                 ]
@@ -182,7 +186,7 @@ mod tests {
             .create();
 
         let api_key = ApiKey("test_api_key".to_string());
-        let client = OpenAiClient::new(&api_key);
+        let client = OpenAiClient::new_with_base_url(&api_key, &Url::parse(&server.url()).unwrap());
         let request = ChatRequest {
             message: "Hello, world!".to_string(),
         };
