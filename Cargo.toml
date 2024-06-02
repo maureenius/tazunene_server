@@ -21,3 +21,4 @@ sqlx = { version = "0.7.4", features = ["postgres", "runtime-tokio-native-tls", 
 
 [dev-dependencies]
 mockito = "1.4.0"
+mockall = "0.12"
