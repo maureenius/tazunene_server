@@ -22,7 +22,7 @@ impl <T: TextGenerator, CR: CharacterRepository> ChatService<T, CR> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domains::{character::{self, Character, CharacterName, Personality}, infra_trait::{MockCharacterRepository, MockTextGenerator}};
+    use crate::domains::{character::{Character, CharacterName, Personality}, infra_trait::{MockCharacterRepository, MockTextGenerator}};
 
     #[tokio::test]
     async fn test_chat_service() {
