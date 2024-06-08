@@ -1,8 +1,7 @@
-use super::character::Character;
-
-use axum::async_trait;
 #[cfg(test)]
 use mockall::automock;
+
+use super::character::Character;
 
 pub trait VoiceSynthesizer {
     fn synthesize(&self, text: &str) -> anyhow::Result<Vec<u8>>;

@@ -60,7 +60,7 @@ impl CharacterRepository for CharacterRepositoryPg {
         )
     }
 
-    async fn update(&self, character: &Character) -> anyhow::Result<Character> {
+    async fn update(&self, _character: &Character) -> anyhow::Result<Character> {
         todo!()
     }
 }
