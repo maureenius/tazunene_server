@@ -111,6 +111,24 @@ mod tests {
         // Verify
         assert_eq!(result.unwrap(), character);
     }
+    
+    #[sqlx::test]
+    async fn test_create() {
+        // Setup
+        let pool = connect_db().await.unwrap();
+        let repo = CharacterRepositoryPg::new(pool);
+
+        let character = Character::new(
+            &CharacterName::new("Test Name"),
+            &Personality::new("Test Personality"),
+        );
+
+        // Exercise
+        let result = repo.create(&character).await;
+
+        // Verify
+        assert_eq!(result.unwrap(), character);
+    }
 
 
     async fn connect_db() -> sqlx::Result<sqlx::Pool<sqlx::Postgres>> {
