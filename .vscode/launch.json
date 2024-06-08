@@ -10,10 +10,11 @@
             "name": "Rust Debug Launch",
             "program": "${workspaceRoot}/target/debug/${workspaceRootFolderName}",
             "args": [],
-            "cwd": "${workspaceRoot}/target/debug/",
+            "cwd": "${workspaceRoot}",
             "sourceLanguages": ["rust"],
             "env": {
-                "LD_LIBRARY_PATH": "/usr/local/lib"
+                "DYLD_LIBRARY_PATH": "/usr/local/lib",
+                "RUST_BACKTRACE": "1"
             }
         },
     ]

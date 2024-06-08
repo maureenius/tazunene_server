@@ -27,4 +27,7 @@
         "clippy::needless_return"
     ],
     "cmake.configureOnOpen": false,
+    "files.watcherExclude": {
+        "**/target": true
+    },
 }

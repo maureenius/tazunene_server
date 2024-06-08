@@ -4,6 +4,10 @@ impl CharacterName {
     pub fn new(name: &str) -> Self {
         Self(name.to_string())
     }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 impl From<CharacterName> for String {
     fn from(name: CharacterName) -> Self {
@@ -17,6 +21,10 @@ impl Personality {
     pub fn new(personality: &str) -> Self {
         Self(personality.to_string())
     }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 impl From<Personality> for String {
     fn from(personality: Personality) -> Self {
@@ -26,7 +34,7 @@ impl From<Personality> for String {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Character {
-    name: CharacterName,
+    pub name: CharacterName,
     pub personality: Personality,
 }
 impl Character {

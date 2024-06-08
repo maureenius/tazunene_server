@@ -1,0 +1,23 @@
+[tasks.RUN_MIG_TEST]
+description = "Run migration to test environment"
+script = "sqlx migrate run --database-url postgres://admin:postgres@localhost:5433/tazunene_test"
+
+[tasks.REVERT_MIG_TEST]
+description = "Run migration to test environment"
+script = "sqlx migrate revert --database-url postgres://admin:postgres@localhost:5433/tazunene_test"
+
+[tasks.INFO_MIG_TEST]
+description = "Run migration to test environment"
+script = "sqlx migrate info --database-url postgres://admin:postgres@localhost:5433/tazunene_test"
+
+[tasks.RUN_MIG_DEV]
+description = "Run migration to test environment"
+script = "sqlx migrate run --database-url postgres://admin:postgres@localhost:5432/tazunene"
+
+[tasks.REVERT_MIG_DEV]
+description = "Run migration to test environment"
+script = "sqlx migrate revert --database-url postgres://admin:postgres@localhost:5432/tazunene"
+
+[tasks.INFO_MIG_DEV]
+description = "Run migration to test environment"
+script = "sqlx migrate info --database-url postgres://admin:postgres@localhost:5432/tazunene"

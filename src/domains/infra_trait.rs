@@ -1,5 +1,6 @@
 use super::character::Character;
 
+use axum::async_trait;
 #[cfg(test)]
 use mockall::automock;
 
@@ -15,5 +16,6 @@ pub trait TextGenerator {
 #[cfg_attr(test, automock)]
 pub trait CharacterRepository {
     async fn find_by_id(&self, id: u64) -> anyhow::Result<Character>;
-    async fn update(&self, character: Character) -> anyhow::Result<()>;
+    async fn create(&self, character: &Character) -> anyhow::Result<Character>;
+    async fn update(&self, character: &Character) -> anyhow::Result<Character>;
 }
